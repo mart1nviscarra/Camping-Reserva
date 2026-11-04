@@ -1,12 +1,39 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { serviciosApi } from "./api/client";
+import ServicioList from "./components/ServicioList";
+import "./App.css";
 
 export default function App() {
-  useEffect(() => {
-    fetch("/api/servicios/")
-      .then((res) => res.json())
-      .then((datos) => console.log("Datos recibidos:", datos))
-      .catch((err) => console.error("Falló la petición:", err));
+  const [servicios, setServicios] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState(null);
+
+  // useCallback mantiene la misma función entre renders (la usa useEffect)
+  const cargar = useCallback(async () => {
+    try {
+      setError(null);
+      setCargando(true);
+      const datos = await serviciosApi.listar();
+      setServicios(datos);
+    } catch (e) {
+      setError("No se pudo cargar la lista. ¿Está encendido el servidor Django?");
+    } finally {
+      setCargando(false); // se ejecuta siempre, haya éxito o error
+    }
   }, []);
 
-  return <h1>Probando la conexión…</h1>;
+  // Carga inicial al montar el componente
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
+
+  return (
+    <main className="contenedor">
+      <h1>Servicios del camping</h1>
+
+      {cargando && <p className="aviso">Cargando…</p>}
+      {error && <p className="aviso error">{error}</p>}
+      {!cargando && !error && <ServicioList servicios={servicios} />}
+    </main>
+  );
 }
