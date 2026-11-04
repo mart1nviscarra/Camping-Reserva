@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { serviciosApi } from "./api/client";
 import ServicioList from "./components/ServicioList";
+import ServicioForm from "./components/ServicioForm";
 import "./App.css";
 
 export default function App() {
@@ -30,7 +31,7 @@ export default function App() {
   return (
     <main className="contenedor">
       <h1>Servicios del camping</h1>
-
+      <ServicioForm servicio={null} onGuardado={cargar} onCancelar={() => { }} />
       {cargando && <p className="aviso">Cargando…</p>}
       {error && <p className="aviso error">{error}</p>}
       {!cargando && !error && <ServicioList servicios={servicios} />}
