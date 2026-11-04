@@ -1,9 +1,8 @@
 // Formatea un número como pesos chilenos: 65000 -> $65.000
-// El precio llega como texto desde DRF, por eso se convierte con Number()
 const formatoCLP = (valor) =>
     Number(valor).toLocaleString("es-CL", { style: "currency", currency: "CLP" });
 
-export default function ServicioList({ servicios }) {
+export default function ServicioList({ servicios, onEditar, onEliminar }) {
     if (servicios.length === 0) {
         return <p className="aviso">Aún no hay servicios registrados.</p>;
     }
@@ -18,11 +17,11 @@ export default function ServicioList({ servicios }) {
                     <th>Precio</th>
                     <th>Electricidad</th>
                     <th>Estado</th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 {servicios.map((s) => (
-                    // key: identificador único para que React distinga cada fila
                     <tr key={s.id}>
                         <td>{s.nombre}</td>
                         <td>{s.descripcion}</td>
@@ -30,6 +29,10 @@ export default function ServicioList({ servicios }) {
                         <td>{formatoCLP(s.precio)}</td>
                         <td>{s.tiene_electricidad ? "Sí" : "No"}</td>
                         <td>{s.activo ? "Activo" : "Inactivo"}</td>
+                        <td>
+                            <button onClick={() => onEditar(s)}>Editar</button>
+                            <button onClick={() => onEliminar(s)}>Eliminar</button>
+                        </td>
                     </tr>
                 ))}
             </tbody>
