@@ -1,39 +1,74 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { serviciosApi } from "./api/client";
+import ServicioList from "./components/ServicioList";
+import ServicioForm from "./components/ServicioForm";
+import "./App.css";
 
-function App() {
+export default function App() {
   const [servicios, setServicios] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(null);
+  const [errorAccion, setErrorAccion] = useState(null);
+  const [editando, setEditando] = useState(null); // servicio en edición o null
 
-  useEffect(() => {
-    fetch("/api/servicios/")
-      .then((res) => {
-        if (!res.ok) throw new Error(`Error HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data) => {
-        // Si DRF tiene paginación, la lista viene en data.results
-        setServicios(Array.isArray(data) ? data : data.results);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setCargando(false));
+  const cargar = useCallback(async () => {
+    try {
+      setError(null);
+      setCargando(true);
+      const datos = await serviciosApi.listar();
+      setServicios(datos);
+    } catch (e) {
+      setError("No se pudo cargar la lista. ¿Está encendido el servidor Django?");
+    } finally {
+      setCargando(false);
+    }
   }, []);
 
-  if (cargando) return <p>Cargando servicios...</p>;
-  if (error) return <p>Ocurrió un error: {error}</p>;
+  useEffect(() => {
+    cargar();
+  }, [cargar]);
+
+  // Tras crear o editar: se cierra el modo edición y se recarga la lista
+  const handleGuardado = () => {
+    setEditando(null);
+    setErrorAccion(null);
+    cargar();
+  };
+
+  const handleEliminar = async (servicio) => {
+    // Confirmación antes de una acción que no se puede deshacer
+    if (!window.confirm("¿Eliminar el servicio «" + servicio.nombre + "»?")) return;
+    try {
+      setErrorAccion(null);
+      await serviciosApi.eliminar(servicio.id);
+      // si se borra el que se estaba editando, se limpia el formulario
+      if (editando && editando.id === servicio.id) setEditando(null);
+      cargar();
+    } catch (e) {
+      setErrorAccion("No se pudo eliminar el servicio.");
+    }
+  };
 
   return (
-    <div>
+    <main className="contenedor">
       <h1>Servicios del camping</h1>
-      <ul>
-        {servicios.map((s) => (
-          <li key={s.id}>
-            {s.nombre} {s.capacidad && `(capacidad: ${s.capacidad})`}
-          </li>
-        ))}
-      </ul>
-    </div>
+
+      <ServicioForm
+        servicio={editando}
+        onGuardado={handleGuardado}
+        onCancelar={() => setEditando(null)}
+      />
+
+      {errorAccion && <p className="aviso error">{errorAccion}</p>}
+      {cargando && <p className="aviso">Cargando…</p>}
+      {error && <p className="aviso error">{error}</p>}
+      {!cargando && !error && (
+        <ServicioList
+          servicios={servicios}
+          onEditar={setEditando}
+          onEliminar={handleEliminar}
+        />
+      )}
+    </main>
   );
 }
-
-export default App;
