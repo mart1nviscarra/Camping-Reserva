@@ -1,35 +1,65 @@
-// Prefijo común de la API. Con el proxy de Vite, basta una ruta relativa.
 const BASE = "/api";
 
-// Función base: todas las peticiones pasan por aquí.
+// App registra aquí qué hacer cuando el servidor responde 401
+let alNoAutorizado = () => { };
+export const setAlNoAutorizado = (fn) => { alNoAutorizado = fn; };
+
+export const getToken = () => localStorage.getItem("token");
+export const setToken = (t) =>
+    t ? localStorage.setItem("token", t) : localStorage.removeItem("token");
+
 async function request(ruta, opciones = {}) {
-    const { headers, ...resto } = opciones;
+    const { headers, body, sinAuth, ...resto } = opciones;
+    const token = getToken();
+    const esFormData = body instanceof FormData; // para subir fotos
 
     const respuesta = await fetch(BASE + ruta, {
         ...resto,
-        headers: { "Content-Type": "application/json", ...headers },
+        body,
+        headers: {
+            // con FormData el navegador pone el Content-Type solo
+            ...(esFormData ? {} : { "Content-Type": "application/json" }),
+            ...(token && !sinAuth ? { Authorization: "Token " + token } : {}),
+            ...headers,
+        },
     });
 
-    // fetch NO lanza error con códigos 4xx/5xx: hay que revisar respuesta.ok
     if (!respuesta.ok) {
         let detalle = null;
         try {
-            detalle = await respuesta.json(); // DRF entrega los errores de validación en JSON
+            detalle = await respuesta.json();
         } catch {
-            // la respuesta de error no traía JSON: se ignora
+            // la respuesta de error no traía JSON
+        }
+        if (respuesta.status === 401 && token && !sinAuth) {
+            alNoAutorizado(); // token inválido o vencido: volver al login
         }
         const error = new Error("Error " + respuesta.status);
         error.status = respuesta.status;
-        error.detalle = detalle; // ej.: { precio: ["El precio debe ser mayor que 0."] }
+        error.detalle = detalle;
         throw error;
     }
 
-    // DELETE responde 204 (sin cuerpo): no hay JSON que leer
-    if (respuesta.status === 204) return null;
-    return respuesta.json();
+    const texto = await respuesta.text();
+    return texto ? JSON.parse(texto) : null;
 }
 
-// Operaciones del recurso Servicio. Observa la barra final: Django la exige.
+export const authApi = {
+    login: (username, password) =>
+        request("/auth/login/", {
+            method: "POST",
+            sinAuth: true,
+            body: JSON.stringify({ username, password }),
+        }),
+    registro: (datos) =>
+        request("/auth/registro/", {
+            method: "POST",
+            sinAuth: true,
+            body: JSON.stringify(datos),
+        }),
+    logout: () => request("/auth/logout/", { method: "POST" }),
+};
+
 export const serviciosApi = {
     listar: () => request("/servicios/"),
     crear: (datos) =>
