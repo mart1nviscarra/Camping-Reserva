@@ -74,3 +74,22 @@ button {
   flex-wrap: wrap;
   gap: .5rem;
 }
+
+.pestanas {
+  display: flex;
+  gap: .5rem;
+  margin: 1rem 0;
+  border-bottom: 2px solid #1F3A5F;
+}
+
+.pestana {
+  border: none;
+  background: transparent;
+  padding: .6rem 1rem;
+  font-weight: 600;
+}
+
+.pestana.activa {
+  background: #1F3A5F;
+  color: white;
+}
