@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
-
+from django.conf import settings
 class Servicio(models.Model):
 
     nombre = models.CharField(max_length=100) # texto corto
@@ -17,3 +17,20 @@ class Servicio(models.Model):
     def __str__(self):
 
      return self.nombre
+    
+class Reserva(models.Model):
+    ESTADOS = [("confirmada", "Confirmada"), ("cancelada", "Cancelada")]
+
+    # PROTECT: no se puede borrar un servicio que tiene reservas
+    servicio = models.ForeignKey(Servicio, on_delete=models.PROTECT, related_name="reservas")
+    usuario = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="reservas")
+    fecha_inicio = models.DateField()
+    fecha_fin = models.DateField()
+    estado = models.CharField(max_length=10, choices=ESTADOS, default="confirmada")
+    creado_en = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-creado_en"]
+
+    def __str__(self):
+        return f"{self.servicio} - {self.usuario} ({self.fecha_inicio})"   
