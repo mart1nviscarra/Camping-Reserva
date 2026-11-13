@@ -68,3 +68,15 @@ export const serviciosApi = {
         request("/servicios/" + id + "/", { method: "PUT", body: JSON.stringify(datos) }),
     eliminar: (id) => request("/servicios/" + id + "/", { method: "DELETE" }),
 };
+
+export const reservasApi = {
+    listar: () => request("/reservas/"),
+    crear: (datos) =>
+        request("/reservas/", { method: "POST", body: JSON.stringify(datos) }),
+    cancelar: (id) => request("/reservas/" + id + "/cancelar/", { method: "POST" }),
+};
+
+export const usuariosApi = {
+    listar: () => request("/usuarios/"),
+    eliminar: (id) => request("/usuarios/" + id + "/", { method: "DELETE" }),
+};
