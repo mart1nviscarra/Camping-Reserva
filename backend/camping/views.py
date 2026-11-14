@@ -5,10 +5,11 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
+from datetime import date
 
 from .models import Servicio, Reserva
 from .permissions import EsAdminOLectura
-from .serializers import ServicioSerializer, ReservaSerializer, UsuarioSerializer
+from .serializers import ServicioSerializer, ReservaSerializer, UsuarioSerializer, FechaOcupadaSerializer
 
 User = get_user_model()
 
@@ -41,6 +42,17 @@ class ReservaViewSet(viewsets.ModelViewSet):
     serializer_class = ReservaSerializer
     permission_classes = [IsAuthenticated]
     http_method_names = ["get", "post", "head", "options"]
+
+    @action(detail=False, methods=["get"])
+    def ocupadas(self, request):
+        """Fechas ocupadas de todas las cabañas, sin datos de quién reservó."""
+        qs = Reserva.objects.filter(
+            estado="confirmada", fecha_fin__gte=date.today()
+        )
+        servicio = request.query_params.get("servicio")
+        if servicio:
+            qs = qs.filter(servicio_id=servicio)
+        return Response(FechaOcupadaSerializer(qs, many=True).data)
 
     def get_queryset(self):
         qs = Reserva.objects.select_related("servicio", "usuario")
