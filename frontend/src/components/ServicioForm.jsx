@@ -14,13 +14,14 @@ export default function ServicioForm({ servicio, onGuardado, onCancelar }) {
     const [form, setForm] = useState(VACIO);
     const [errores, setErrores] = useState({});
     const [enviando, setEnviando] = useState(false);
+    const [foto, setFoto] = useState(null);
+    const [claveFoto, setClaveFoto] = useState(0);
 
     // Si cambia el servicio seleccionado (modo edición), se precargan sus datos
     useEffect(() => {
         setForm(servicio ?? VACIO);
         setErrores({});
     }, [servicio]);
-
     // Un solo manejador para todos los campos: usa el atributo "name" del input
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
@@ -28,20 +29,32 @@ export default function ServicioForm({ servicio, onGuardado, onCancelar }) {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault(); // evita que el navegador recargue la página
+        e.preventDefault();
         setEnviando(true);
         setErrores({});
         try {
+            const datos = new FormData();
+            datos.append("nombre", form.nombre);
+            datos.append("descripcion", form.descripcion);
+            datos.append("capacidad", form.capacidad);
+            datos.append("precio", form.precio);
+            datos.append("tiene_electricidad", form.tiene_electricidad);
+            datos.append("activo", form.activo);
+            if (foto) datos.append("foto", foto);
+
             if (servicio) {
-                await serviciosApi.actualizar(servicio.id, form);
+                await serviciosApi.actualizar(servicio.id, datos);
             } else {
-                await serviciosApi.crear(form);
+                await serviciosApi.crear(datos);
             }
             setForm(VACIO);
-            onGuardado(); // avisa a App para que recargue la lista
+            setFoto(null);
+            setClaveFoto((k) => k + 1);   // usa el setter, no useState
+            onGuardado();
         } catch (err) {
+            console.error("Error al guardar:", err);
             if (err.status === 400 && err.detalle) {
-                setErrores(err.detalle); // errores de validación del serializer
+                setErrores(err.detalle);
             } else {
                 setErrores({ general: ["No se pudo guardar. Intenta nuevamente."] });
             }
@@ -96,6 +109,11 @@ export default function ServicioForm({ servicio, onGuardado, onCancelar }) {
                     <input name="activo" type="checkbox" checked={form.activo} onChange={handleChange} />{" "}
                     Activo
                 </span>
+            </label>
+            <label>
+                Foto (opcional, máx. 2 MB)
+                <input type="file" accept="image/*" onChange={(e) => setFoto(e.target.files[0])} />
+                {mensajes("foto")}
             </label>
 
             {mensajes("general")}
