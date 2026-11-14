@@ -30,6 +30,7 @@ export default function App() {
   const [errorAccion, setErrorAccion] = useState(null);
   const [editando, setEditando] = useState(null);
   const [servicioAReservar, setServicioAReservar] = useState(null);
+  const [ocupadas, setOcupadas] = useState([]);
 
   const limpiarSesion = useCallback(() => {
     setToken(null);
@@ -40,11 +41,13 @@ export default function App() {
     setUsuarios([]);
     setEditando(null);
     setVista("servicios");
+    setOcupadas([]);
   }, []);
 
   useEffect(() => {
     setAlNoAutorizado(limpiarSesion);
   }, [limpiarSesion]);
+
 
   // Carga todo lo que el rol puede ver
   const cargar = useCallback(async () => {
@@ -53,6 +56,7 @@ export default function App() {
       setCargando(true);
       setServicios(await serviciosApi.listar());
       setReservas(await reservasApi.listar());
+      setOcupadas(await reservasApi.ocupadas());
       if (usuario?.es_admin) setUsuarios(await usuariosApi.listar());
     } catch (e) {
       if (e.status !== 401) {
@@ -196,6 +200,7 @@ export default function App() {
           )}
           <ServicioList
             servicios={servicios}
+            ocupadas={ocupadas}
             esAdmin={usuario.es_admin}
             onEditar={setEditando}
             onEliminar={handleEliminar}
@@ -209,6 +214,7 @@ export default function App() {
           {!usuario.es_admin && (
             <ReservaForm
               servicios={servicios}
+              ocupadas={ocupadas}
               servicioId={servicioAReservar}
               onCreada={handleReservaCreada}
             />
