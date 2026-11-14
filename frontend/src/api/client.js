@@ -70,6 +70,7 @@ export const serviciosApi = {
 
 export const reservasApi = {
     listar: () => request("/reservas/"),
+    ocupadas: () => request("/reservas/ocupadas/"),
     crear: (datos) =>
         request("/reservas/", { method: "POST", body: JSON.stringify(datos) }),
     cancelar: (id) => request("/reservas/" + id + "/cancelar/", { method: "POST" }),

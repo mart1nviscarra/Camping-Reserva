@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { reservasApi } from "../api/client";
 
-export default function ReservaForm({ servicios, servicioId, onCreada }) {
+export default function ReservaForm({ servicios, ocupadas = [], servicioId, onCreada }) {
     const [form, setForm] = useState({ servicio: "", fecha_inicio: "", fecha_fin: "" });
     const [errores, setErrores] = useState({});
     const [enviando, setEnviando] = useState(false);
 
-    // Si el cliente presionó "Reservar" en una fila, se preselecciona
     useEffect(() => {
         if (servicioId) setForm((f) => ({ ...f, servicio: String(servicioId) }));
     }, [servicioId]);
@@ -32,6 +31,8 @@ export default function ReservaForm({ servicios, servicioId, onCreada }) {
     const mensajes = (campo) =>
         errores[campo]?.map((m) => <span key={m} className="campo-error">{m}</span>);
 
+    const fechasDeLaCabana = ocupadas.filter((o) => o.servicio === Number(form.servicio));
+
     return (
         <form className="formulario" onSubmit={handleSubmit}>
             <h2>Nueva reserva</h2>
@@ -44,6 +45,14 @@ export default function ReservaForm({ servicios, servicioId, onCreada }) {
                         <option key={s.id} value={s.id}>{s.nombre}</option>
                     ))}
                 </select>
+                {form.servicio && (
+                    <small>
+                        Ocupada en:{" "}
+                        {fechasDeLaCabana.length === 0
+                            ? "ninguna fecha, está libre"
+                            : fechasDeLaCabana.map((o) => o.fecha_inicio + " → " + o.fecha_fin).join(" · ")}
+                    </small>
+                )}
                 {mensajes("servicio")}
             </label>
 
@@ -68,4 +77,4 @@ export default function ReservaForm({ servicios, servicioId, onCreada }) {
             </div>
         </form>
     );
-} 
+}
