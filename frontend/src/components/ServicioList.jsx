@@ -10,6 +10,7 @@ export default function ServicioList({ servicios, esAdmin, onEditar, onEliminar,
         <table className="tabla">
             <thead>
                 <tr>
+                    <th>Foto</th>
                     <th>Nombre</th>
                     <th>Descripción</th>
                     <th>Capacidad</th>
@@ -22,6 +23,13 @@ export default function ServicioList({ servicios, esAdmin, onEditar, onEliminar,
             <tbody>
                 {servicios.map((s) => (
                     <tr key={s.id}>
+                        <td>
+                            {s.foto ? (
+                                <img src={s.foto} alt={s.nombre} style={{ width: 90, height: 60, objectFit: "cover", borderRadius: 4 }} />
+                            ) : (
+                                "—"
+                            )}
+                        </td>
                         <td>{s.nombre}</td>
                         <td>{s.descripcion}</td>
                         <td>{s.capacidad} personas</td>

@@ -62,10 +62,9 @@ export const authApi = {
 
 export const serviciosApi = {
     listar: () => request("/servicios/"),
-    crear: (datos) =>
-        request("/servicios/", { method: "POST", body: JSON.stringify(datos) }),
+    crear: (datos) => request("/servicios/", { method: "POST", body: datos }),
     actualizar: (id, datos) =>
-        request("/servicios/" + id + "/", { method: "PUT", body: JSON.stringify(datos) }),
+        request("/servicios/" + id + "/", { method: "PUT", body: datos }),
     eliminar: (id) => request("/servicios/" + id + "/", { method: "DELETE" }),
 };
 
