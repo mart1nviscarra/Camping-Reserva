@@ -75,4 +75,35 @@ Ejemplo de JSON de un servicio:
 - **Error 500 en `App.jsx`:** contenido anterior que no compilaba; se reemplazó el archivo completo.
 - **`git push` sin upstream:** se usó `git push --set-upstream origin feature/integracion-react-django`.
 
+## Roles y autenticación
+
+- **Administrador:** gestiona servicios (con fotos), ve todas las reservas y los usuarios registrados, y puede eliminar clientes.
+- **Cliente:** se registra desde la pantalla de login, ve las cabañas disponibles con sus fechas ocupadas, y crea o cancela sus reservas.
+- Autenticación por token (`Authorization: Token <token>`). Las contraseñas se guardan con hash.
+- El administrador se crea con `python manage.py createsuperuser`. Quien se registra desde la web siempre es cliente.
+
+## Endpoints
+
+| Método | URL | Acceso |
+|---|---|---|
+| POST | `/api/auth/registro/` | Público |
+| POST | `/api/auth/login/` | Público |
+| POST | `/api/auth/logout/` | Autenticado |
+| GET | `/api/servicios/` | Autenticado (el cliente ve solo los activos) |
+| POST, PUT, DELETE | `/api/servicios/`, `/api/servicios/<id>/` | Solo administrador |
+| GET, POST | `/api/reservas/` | Autenticado (el cliente ve solo las suyas) |
+| GET | `/api/reservas/ocupadas/` | Autenticado (solo fechas, sin datos de personas) |
+| POST | `/api/reservas/<id>/cancelar/` | Dueño de la reserva o administrador |
+| GET, DELETE | `/api/usuarios/`, `/api/usuarios/<id>/` | Solo administrador |
+
+## Fotos
+
+Las fotos se guardan en `backend/media/` (no se suben al repositorio). Al clonar el proyecto, las cabañas aparecen sin foto hasta que el administrador las suba.
+
+## Ejecución desde cero
+
+1. **Backend:** `cd backend`, `python -m venv .venv`, activar el entorno (`.venv\Scripts\Activate.ps1`), `pip install -r requirements.txt`, `python manage.py migrate`, `python manage.py createsuperuser`, `python manage.py runserver`.
+2. **Frontend:** `cd frontend`, `npm install`, `npm run dev`.
+3. Abrir http://localhost:5173 e iniciar sesión con el superusuario.
+
 
