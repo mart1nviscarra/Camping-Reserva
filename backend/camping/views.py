@@ -4,6 +4,7 @@ from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 
 from .models import Servicio, Reserva
 from .permissions import EsAdminOLectura
@@ -16,6 +17,7 @@ class ServicioViewSet(viewsets.ModelViewSet):
     """Todos leen, solo el admin modifica. El cliente ve solo los activos."""
     serializer_class = ServicioSerializer
     permission_classes = [EsAdminOLectura]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         qs = Servicio.objects.all()

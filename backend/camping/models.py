@@ -5,6 +5,7 @@ class Servicio(models.Model):
 
     nombre = models.CharField(max_length=100) # texto corto
     descripcion = models.TextField(blank=True) # texto largo, opcional
+    foto = models.ImageField(upload_to="servicios/", blank=True, null=True) #Foto
     capacidad = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(50)])
     precio= models.DecimalField(max_digits=10, decimal_places=0)# CLP no usa decimales
     tiene_electricidad = models.BooleanField(default=True) # si tiene o no electricidad
@@ -17,6 +18,7 @@ class Servicio(models.Model):
     def __str__(self):
 
      return self.nombre
+
     
 class Reserva(models.Model):
     ESTADOS = [("confirmada", "Confirmada"), ("cancelada", "Cancelada")]

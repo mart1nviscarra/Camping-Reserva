@@ -12,15 +12,22 @@ class ServicioSerializer(serializers.ModelSerializer):
         model = Servicio
         fields = [
             "id", "nombre", "descripcion", "capacidad",
-            "precio", "tiene_electricidad", "activo", "creado_en",
+            "precio", "tiene_electricidad", "activo", "creado_en","foto"
         ]
         read_only_fields = ["id", "creado_en"]  # los genera el servidor
+    
 
     # Validación a medida: se ejecuta automáticamente para el campo "precio"
     def validate_precio(self, value):
         if value <= 0:
             raise serializers.ValidationError("El precio debe ser mayor que 0.")
         return value
+    
+    def validate_foto(self, value):
+        if value and value.size > 2 * 1024 * 1024:
+            raise serializers.ValidationError("La foto no puede pesar más de 2 MB.")
+        return value
+    
 class ReservaSerializer(serializers.ModelSerializer):
     servicio_nombre = serializers.CharField(source="servicio.nombre", read_only=True)
     usuario_username = serializers.CharField(source="usuario.username", read_only=True)
@@ -65,4 +72,5 @@ class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         # La contraseña nunca se expone
-        fields = ["id", "username", "email", "es_admin", "date_joined", "total_reservas"]
+        fields = ["id", "username", "email", "es_admin", "date_joined", "total_reservas",]
+    
