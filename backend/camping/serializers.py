@@ -73,4 +73,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
         model = User
         # La contraseña nunca se expone
         fields = ["id", "username", "email", "es_admin", "date_joined", "total_reservas",]
+class FechaOcupadaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reserva
+        fields = ["servicio", "fecha_inicio", "fecha_fin"]
     
